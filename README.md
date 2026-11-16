@@ -6,13 +6,18 @@
 
 SQL marts, Python statistics, an Excel break-even model and an interactive dashboard on 94,819 delivered orders from the Olist marketplace.
 
+[![Live dashboard](https://img.shields.io/badge/Open-Live_Dashboard-2a78d6?style=for-the-badge)](https://sidhantpujara10.github.io/Marketplace-Delivery-Reliability-and-Seller-Intervention/)
+[![Findings report](https://img.shields.io/badge/Read-Findings_Report-eb6834?style=for-the-badge)](FINDINGS.md)
+
 ![SQL](https://img.shields.io/badge/SQL-SQLite-003B57?logo=sqlite&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-pandas_+_numpy-3776AB?logo=python&logoColor=white)
 ![Excel](https://img.shields.io/badge/Excel-break--even_model-217346?logo=microsoftexcel&logoColor=white)
 ![Dashboard](https://img.shields.io/badge/Dashboard-Chart.js-FF6384?logo=chartdotjs&logoColor=white)
 ![Orders](https://img.shields.io/badge/Orders-94,819-2a78d6)
 
-![Dashboard preview](assets/preview.png)
+[![Dashboard preview](assets/preview.png)](https://sidhantpujara10.github.io/Marketplace-Delivery-Reliability-and-Seller-Intervention/)
+
+*Click the image to open the live dashboard.*
 
 </div>
 
@@ -35,7 +40,7 @@ Full write up: **[FINDINGS.md](FINDINGS.md)**
 
 ## The dashboard
 
-Open `index.html` through a local server (see [Run it yourself](#run-it-yourself)). Light theme, three tabs, every view responds to the filters.
+**[Open the live dashboard](https://sidhantpujara10.github.io/Marketplace-Delivery-Reliability-and-Seller-Intervention/)**. Light theme, three tabs, every view responds to the filters.
 
 <details open>
 <summary><b>1. Reliability scorecard</b></summary>
