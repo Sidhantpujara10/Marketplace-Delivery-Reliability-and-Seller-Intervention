@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace Delivery Reliability</title>
+<meta name="description" content="Interactive reliability scorecard, seller drill through and recommendation queue built on the Olist marketplace dataset.">
+<style>
+:root{
+  --page:#f4f6f9; --surface:#ffffff; --surface-2:#f1f4f8; --ink:#0f1b2d; --ink-2:#4a5568; --muted:#7a8494;
+  --grid:#e8ebf0; --axis:#c9d0da; --border:rgba(15,27,45,.10);
+  --s1:#2a78d6; --s2:#eb6834; --accent:#1c5cab; --dim:#cfd9e6; --tint:#eaf2fc;
+  --good:#0a7d28; --bad:#c0392b;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--page);color:var(--ink);line-height:1.45;font-size:14px}
+.wrap{max-width:1360px;margin:0 auto;padding:20px}
+a{color:var(--accent)}
+.hero{background:linear-gradient(120deg,#ffffff 0%,#eaf2fc 100%);border:1px solid var(--border);border-radius:14px;padding:22px 26px;box-shadow:var(--shadow);display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.hero h1{font-size:24px;font-weight:680;letter-spacing:-.01em}
+.hero p{color:var(--ink-2);margin-top:6px;max-width:720px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{font-size:12px;padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--border);color:var(--ink-2)}
+.hero svg{flex:none}
+.bar{position:sticky;top:0;z-index:5;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:10px 14px;margin:14px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px}
+.f label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+select,input[type=search]{font:inherit;font-size:13px;padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);max-width:180px}
+.btn{font:inherit;font-size:13px;cursor:pointer;border-radius:8px;padding:7px 12px;border:1px solid var(--border);background:var(--surface);color:var(--ink)}
+.btn:hover{background:var(--surface-2)} .btn:disabled{opacity:.4;cursor:default}
+select:focus,.btn:focus-visible,input:focus{outline:2px solid var(--s1);outline-offset:1px}
+.spacer{flex:1}.count{font-size:13px;color:var(--ink-2);align-self:center}.count b{color:var(--ink)}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--ink-2)}
+.tab[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tab small{font-weight:500;opacity:.8;margin-left:6px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;min-width:0}
+.card h2{font-size:15px;font-weight:650}
+.desc{font-size:12.5px;color:var(--ink-2);margin:2px 0 12px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:8px}
+.grid{display:grid;gap:14px;margin-bottom:14px}
+.k6{grid-template-columns:repeat(6,1fr)}.g2{grid-template-columns:1fr 1fr}.g21{grid-template-columns:2fr 1fr}.g12{grid-template-columns:1fr 2fr}.g3{grid-template-columns:repeat(3,1fr)}
+.kpi{border-top:3px solid var(--s1);padding:14px 16px}
+.kpi.o{border-top-color:var(--s2)}
+.kpi .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kpi .val{font-size:26px;font-weight:680;margin:3px 0 1px;letter-spacing:-.02em}
+.kpi .sub{font-size:12px;color:var(--ink-2)}
+.chart{position:relative;height:300px}.chart.t{height:340px}.chart.s{height:230px}
+.mix .row{margin:12px 0}.mix .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.mix .track{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface-2);gap:2px}
+.mix .track i{display:block;height:100%}.mix small{font-size:11.5px;color:var(--muted)}
+.lg{display:flex;gap:14px;font-size:12px;color:var(--ink-2);margin-bottom:6px;flex-wrap:wrap}
+.lg span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--axis);white-space:nowrap;user-select:none}
+th[data-k]{cursor:pointer}th[data-k]:hover{color:var(--ink)}
+td{padding:8px 8px;border-bottom:1px solid var(--grid);vertical-align:middle}
+.r{text-align:right}.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr.click{cursor:pointer}tbody tr.click:hover{background:var(--surface-2)}tbody tr.sel{background:var(--tint)}
+.tw{overflow-x:auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.tag.d{border-color:var(--s2);background:#fdf0ea;color:#8a3410}.tag.t{border-color:var(--s1);background:var(--tint);color:#174a8a}.tag.w{border-color:#c9a000;background:#fff8dc;color:#6b5500}
+.sub2{color:var(--muted);font-size:12px}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--ink-2);gap:8px;flex-wrap:wrap}
+.pager div{display:flex;gap:8px}
+.ctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.sl{margin:12px 0}.sl .top{display:flex;justify-content:space-between;font-size:13px}.sl b{font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--s1)}
+.out{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.out div{background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.out .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.out .v{font-size:20px;font-weight:680;margin-top:2px}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.ev{border-left:4px solid var(--s1);padding:10px 14px;background:var(--surface-2);border-radius:0 10px 10px 0;margin:10px 0}
+.ev.o{border-left-color:var(--s2)}
+.ev .h{font-weight:650}.ev .b{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.ev .nums{display:flex;gap:18px;margin-top:8px;font-size:12.5px;flex-wrap:wrap}.ev .nums b{font-size:16px;display:block}
+.verdict{font-size:13.5px;margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--tint);border:1px solid #cfe0f5}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 12px}.stat div b{display:block;font-size:20px;font-weight:680}.stat div{font-size:12px;color:var(--ink-2)}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;padding:6px 4px 24px}footer p{margin-top:6px}
+@media(max-width:1150px){.k6{grid-template-columns:repeat(3,1fr)}.g21,.g12,.g3{grid-template-columns:1fr 1fr}.g21>*:first-child,.g12>*:last-child{grid-column:1/-1}}
+@media(max-width:740px){.k6{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr!important}.bar{position:static}.hero svg{display:none}.f{flex:1 1 130px}select{max-width:100%;width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div>
+    <h1>Marketplace Delivery Reliability</h1>
+    <p>Where delivery promises fail on the Olist marketplace, what causes it, and which interventions deserve an operations manager's limited attention.</p>
+    <div class="pills"><span class="pill" id="p-orders"></span><span class="pill" id="p-range"></span><span class="pill">Source: Olist public dataset</span></div>
+  </div>
+  <svg width="230" height="92" viewBox="-6 0 230 92" role="img" aria-label="Illustration: seller to carrier to customer">
+    <g fill="none" stroke="#1c5cab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="34" width="38" height="30" rx="4" fill="#fff"/><path d="M6 44h38M20 34v10"/>
+      <path d="M52 49h22" stroke="#9db8dc"/><path d="M70 45l4 4-4 4" stroke="#9db8dc"/>
+      <rect x="82" y="36" width="34" height="24" rx="3" fill="#fff"/><path d="M116 44h12l8 8v8h-20z" fill="#fff"/>
+      <circle cx="94" cy="64" r="5" fill="#fff"/><circle cx="126" cy="64" r="5" fill="#fff"/>
+      <path d="M144 49h22" stroke="#9db8dc"/><path d="M162 45l4 4-4 4" stroke="#9db8dc"/>
+      <path d="M174 48l15-13 15 13v16h-30z" fill="#fff"/><path d="M185 64v-9h8v9"/>
+    </g>
+    <g font-family="system-ui,sans-serif" font-size="10" fill="#4a5568" text-anchor="middle"><text x="25" y="80">Seller</text><text x="109" y="84">Carrier</text><text x="189" y="80">Customer</text></g>
+  </svg>
+</header>
+
+<section class="bar" aria-label="Filters">
+  <div class="f"><label for="f-from">From</label><select id="f-from"></select></div>
+  <div class="f"><label for="f-to">To</label><select id="f-to"></select></div>
+  <div class="f"><label for="f-ss">Seller state</label><select id="f-ss"></select></div>
+  <div class="f"><label for="f-cs">Customer state</label><select id="f-cs"></select></div>
+  <div class="f"><label for="f-cat">Category</label><select id="f-cat"></select></div>
+  <div class="spacer"></div><span class="count" id="count"></span><button class="btn" id="reset">Reset</button>
+</section>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-t="score" aria-selected="true">Reliability scorecard</button>
+  <button class="tab" role="tab" data-t="sellers" aria-selected="false">Seller drill through</button>
+  <button class="tab" role="tab" data-t="queue" aria-selected="false">Recommendation queue</button>
+</nav>
+
+<!-- ================= SCORECARD ================= -->
+<section class="view on" id="v-score">
+  <div class="grid k6" id="kpis"></div>
+  <div class="grid g21">
+    <div class="card">
+      <h2>Late order rate by month, split by cause</h2>
+      <div class="desc">Dispatch: the seller handed the parcel to the carrier after the deadline. Transit: the seller was on time and the carrier lost the days.</div>
+      <div class="chart t"><canvas id="c-trend" role="img" aria-label="Stacked bars of late rate by month and cause"></canvas></div>
+    </div>
+    <div class="card mix">
+      <h2>Did the mix change, or did performance?</h2>
+      <div class="desc">Late rate rose from <b id="mx-a"></b> in normal months to <b id="mx-b"></b> in the three spike months. Each bar splits that rise. Full period, not filtered.</div>
+      <div class="lg"><span style="--c:var(--s1)">Same mix performed worse</span><span style="--c:var(--s2)">Mix shifted</span></div>
+      <div id="mix"></div>
+      <div class="verdict" id="mx-v"></div>
+    </div>
+  </div>
+  <div class="grid g3">
+    <div class="card"><h2>Lanes with the most late orders</h2><div class="desc">Seller state to customer state, 100 orders or more.</div><div class="chart"><canvas id="c-lane" role="img" aria-label="Bar chart of lanes by late orders"></canvas></div><div class="hint">Click a bar to filter to that lane.</div></div>
+    <div class="card"><h2>Late rate by customer state</h2><div class="desc">The 12 largest destinations in view.</div><div class="chart"><canvas id="c-cs" role="img" aria-label="Bar chart of late rate by customer state"></canvas></div><div class="hint">Click a bar to filter. Click again to clear.</div></div>
+    <div class="card"><h2>Late rate by category</h2><div class="desc">Top categories by volume.</div><div class="chart"><canvas id="c-cat" role="img" aria-label="Bar chart of late rate by category"></canvas></div><div class="hint">Click a bar to filter. Click again to clear.</div></div>
+  </div>
+</section>
+
+<!-- ================= SELLERS ================= -->
+<section class="view" id="v-sellers">
+  <div class="grid g2">
+    <div class="card">
+      <h2>Is delay concentrated in a few sellers?</h2>
+      <div class="desc" id="pareto-d"></div>
+      <div class="chart"><canvas id="c-pareto" role="img" aria-label="Cumulative share of late orders and all orders by seller rank"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Observed late rate against what the order mix predicts</h2>
+      <div class="desc">Top 12 sellers by excess late orders. The line is the 95% interval. A seller is only flagged when the whole interval sits above the expected rate.</div>
+      <div class="chart"><canvas id="c-ci" role="img" aria-label="Interval chart of seller late rates against expected"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g21">
+    <div class="card">
+      <div class="ctl">
+        <div style="flex:1;min-width:200px"><h2>Seller scorecard</h2><div class="desc" style="margin-bottom:0">Click a row to drill through. Click a header to sort. Flagged means the whole interval is above the expected rate.</div></div>
+        <div class="f" style="min-width:210px"><label for="minvol">Minimum orders: <b id="minvol-v">30</b></label><input type="range" id="minvol" min="5" max="200" step="5" value="30"></div>
+        <div class="f"><label for="sq">Find seller</label><input type="search" id="sq" placeholder="ID or city"></div>
+      </div>
+      <div class="tw"><table id="t-sel"><thead></thead><tbody></tbody></table></div>
+      <div class="pager"><span id="sel-info"></span><div><button class="btn" id="sel-prev">Previous</button><button class="btn" id="sel-next">Next</button></div></div>
+    </div>
+    <div class="card" id="drill"></div>
+  </div>
+</section>
+
+<!-- ================= QUEUE ================= -->
+<section class="view" id="v-queue">
+  <div class="grid g2">
+    <div class="card">
+      <h2>Before acting: do flagged sellers and lanes stay bad?</h2>
+      <div class="desc">Flags were set on orders up to February 2018 and then checked on April to August 2018, which the flags never saw.</div>
+      <div id="evidence"></div>
+    </div>
+    <div class="card">
+      <h2>Pilot simulator</h2>
+      <div class="desc">Uses the sellers and lanes in the current view. Costs are your assumptions; nothing here is published by Olist.</div>
+      <div class="sl"><div class="top"><span>Sellers in the coaching pilot</span><b id="s-n-v"></b></div><input type="range" id="s-n" min="5" max="120" step="5" value="30"></div>
+      <div class="sl"><div class="top"><span>Coaching effect on dispatch caused late orders</span><b id="s-e-v"></b></div><input type="range" id="s-e" min="5" max="60" step="5" value="30"></div>
+      <div class="sl"><div class="top"><span>Cost per seller coached (R$)</span><b id="s-c-v"></b></div><input type="range" id="s-c" min="0" max="800" step="10" value="400"></div>
+      <div class="sl"><div class="top"><span>Cost of one late order to the marketplace (R$)</span><b id="s-l-v"></b></div><input type="range" id="s-l" min="10" max="300" step="10" value="40"></div>
+      <div class="out" id="sim-out"></div>
+      <div class="sl" style="margin-top:16px"><div class="top"><span>Days added to the promise on the 12 persistent lanes, orders in view</span><b id="s-d-v"></b></div><input type="range" id="s-d" min="1" max="7" step="1" value="3"></div>
+      <div class="out" id="lane-out"></div>
+      <div class="verdict" id="sim-v"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h2>Recommendation queue</h2>
+    <div class="desc">Ranked by late orders the action could plausibly remove. No seller is listed for punitive action: late rate alone did not persist in the holdout.</div>
+    <div class="tw"><table id="t-q"><thead><tr><th>#</th><th>Target</th><th>Type</th><th class="r">Orders</th><th class="r">Late rate</th><th class="r">Dispatch deadline missed</th><th class="r">Addressable late orders</th><th>Recommended action</th></tr></thead><tbody></tbody></table></div>
+    <div class="pager"><span id="q-info"></span><div><button class="btn" id="q-prev">Previous</button><button class="btn" id="q-next">Next</button></div></div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Definitions.</b> Late: delivered after the estimated delivery date. Excess days: days past the estimate. Expected rate: the platform late rate for each order's month and destination state, summed over a seller's orders. Intervals are 95% Wilson intervals.</p>
+  <p><b>Data.</b> Olist Brazilian e-commerce public dataset, delivered orders purchased January 2017 to August 2018. Pipeline: SQL marts in SQLite, Python for validation, bootstrap and simulation. Built by Sidhant Pujara.</p>
+</footer>
+</div>
+
+<script src="assets/chart.umd.js"></script>
+<script src="data/dashboard_data.js"></script>
+<script>
+(function(){
+const D = OLIST, RES = D.results, N = D.m.length, NM = D.months.length, NS = D.sellers.length, NCS = D.customerStates.length;
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const p1 = x => (Math.round(x*10)/10).toFixed(1), pct = (a,b) => b ? 100*a/b : 0;
+const brl = n => 'R$ '+fmt(n);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mlabel = m => { const [y,mo] = m.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo-1]+' '+y.slice(2); };
+function wilson(k,n){ if(!n) return [0,0]; const z=1.96,p=k/n,d=1+z*z/n,c=(p+z*z/(2*n))/d,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d; return [c-h,c+h]; }
+const BAD = new Set(RES.lane_holdout.lanes_flagged.map(l => { const [a,b] = l.split(' > '); return D.sellerStates.indexOf(a)*100 + D.customerStates.indexOf(b); }));
+const PERSIST = RES.holdout['dispatch miss flag'].persistence;
+
+/* ---------- filters ---------- */
+const F = {from:0, to:NM-1, ss:-1, cs:-1, cat:-1};
+const opts = (el, items, all) => el.innerHTML = (all?`<option value="-1">${all}</option>`:'') + items.map((l,i)=>`<option value="${i}">${esc(l)}</option>`).join('');
+opts($('f-from'), D.months.map(mlabel)); opts($('f-to'), D.months.map(mlabel)); $('f-to').value = NM-1;
+opts($('f-ss'), D.sellerStates, 'All'); opts($('f-cs'), D.customerStates, 'All'); opts($('f-cat'), D.categories, 'All');
+const IDS = {from:'f-from', to:'f-to', ss:'f-ss', cs:'f-cs', cat:'f-cat'};
+const sync = () => Object.entries(IDS).forEach(([k,id]) => $(id).value = F[k]);
+Object.entries(IDS).forEach(([k,id]) => $(id).addEventListener('change', e => { F[k] = +e.target.value;
+  if(F.from>F.to){ if(k==='from') F.to=F.from; else F.from=F.to; sync(); } render(); }));
+$('reset').onclick = () => { Object.assign(F,{from:0,to:NM-1,ss:-1,cs:-1,cat:-1}); sync(); render(); };
+const toggle = (k,v) => { F[k] = F[k]===v ? -1 : v; sync(); render(); };
+
+/* ---------- aggregation: one pass over the orders ---------- */
+function agg(skip){
+  const {m,s,ss,cs,c,cause,dm,x,v,d} = D;
+  const A = {n:0, late:0, disp:0, dm:0, excess:0, value:0, lateValue:0, xs:[], dh:new Uint32Array(1200),
+    mo:Array.from({length:NM},()=>[0,0,0]), cs:Array.from({length:NCS},()=>[0,0]), cat:D.categories.map(()=>[0,0]),
+    lane:new Map(), cell:new Float64Array(NM*NCS*2), sel:new Map(), rows:[], badN:0, badLate:[]};
+  for(let i=0;i<N;i++){
+    if(m[i]<F.from||m[i]>F.to) continue;
+    if(F.ss>=0&&ss[i]!==F.ss) continue;
+    if(skip!=='cs'&&F.cs>=0&&cs[i]!==F.cs) continue;
+    if(skip!=='cat'&&F.cat>=0&&c[i]!==F.cat) continue;
+    const L = cause[i]>0?1:0;
+    A.n++; A.cs[cs[i]][0]++; A.cs[cs[i]][1]+=L; A.cat[c[i]][0]++; A.cat[c[i]][1]+=L;
+    if(skip) continue;
+    A.late+=L; A.dm+=dm[i]; A.value+=v[i]; A.dh[Math.min(1199,d[i])]++;
+    const M = A.mo[m[i]]; M[0]++; if(cause[i]===1){M[1]++;A.disp++;} else if(cause[i]===2) M[2]++;
+    if(L){ A.excess+=x[i]; A.lateValue+=v[i]; A.xs.push(x[i]); }
+    const lk = ss[i]*100+cs[i]; let ln = A.lane.get(lk); if(!ln) A.lane.set(lk, ln=[0,0,0]); ln[0]++; ln[1]+=L; if(cause[i]===2) ln[2]++;
+    if(BAD.has(lk)){ A.badN++; if(L) A.badLate.push(x[i]); }
+    const ck = (m[i]*NCS+cs[i])*2; A.cell[ck]++; A.cell[ck+1]+=L;
+    let S = A.sel.get(s[i]); if(!S) A.sel.set(s[i], S={i:s[i],n:0,late:0,ld:0,lt:0,dm:0,exp:0,value:0});
+    S.n++; S.late+=L; S.dm+=dm[i]; S.value+=v[i]; if(cause[i]===1) S.ld++; else if(cause[i]===2) S.lt++;
+    A.rows.push(i);
+  }
+  if(skip) return A;
+  for(const i of A.rows){ const ck=(m[i]*NCS+cs[i])*2; A.sel.get(s[i]).exp += A.cell[ck+1]/A.cell[ck]; }
+  const rate = A.late/A.n, dmr = A.dm/A.n;
+  A.sellers = [...A.sel.values()].map(S => { const [lo,hi]=wilson(S.late,S.n), dlo=wilson(S.dm,S.n)[0];
+    return Object.assign(S,{rate:S.late/S.n, lo, hi, erate:S.exp/S.n, excess:S.late-S.exp, dmr:S.dm/S.n,
+      flagLate: lo > S.exp/S.n, flagDisp: dlo > dmr, cause: S.ld>=S.lt?'dispatch':'transit'}); });
+  A.rate = rate; A.dmr = dmr;
+  return A;
+}
+
+/* ---------- charts ---------- */
+Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'; Chart.defaults.font.size = 12; Chart.defaults.animation.duration = 200;
+const tip = cb => ({backgroundColor:'#0f1b2d', padding:10, cornerRadius:8, displayColors:false, titleFont:{weight:'600'}, callbacks:cb});
+const ax = grid => ({grid:{display:grid,color:css('--grid'),drawTicks:false}, border:{color:css('--axis'),display:!grid}, ticks:{color:css('--muted'),padding:6}});
+const pctTick = v => v+'%';
+const pointer = (e,els) => e.native.target.style.cursor = els.length?'pointer':'default';
+const legend = {display:true, position:'top', align:'end', labels:{color:css('--ink-2'), boxWidth:10, boxHeight:10, usePointStyle:false, padding:14}};
+const C = {};
+function hbar(id, onClick, cb, xfmt){
+  return new Chart($(id), {type:'bar', data:{labels:[],datasets:[{data:[],backgroundColor:css('--s1'),borderRadius:4,borderSkipped:false,maxBarThickness:22}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,onClick,onHover:pointer,plugins:{legend:{display:false},tooltip:tip(cb)},
+      scales:{x:Object.assign(ax(true),{beginAtZero:true,ticks:Object.assign(ax().ticks,xfmt?{callback:xfmt}:{})}),y:ax(false)}}});
+}
+C.trend = new Chart($('c-trend'), {type:'bar', data:{labels:[],datasets:[
+    {label:'Transit caused',data:[],backgroundColor:css('--s1'),borderColor:'#fff',borderWidth:1,borderRadius:3,borderSkipped:false},
+    {label:'Dispatch caused',data:[],backgroundColor:css('--s2'),borderColor:'#fff',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend, tooltip:Object.assign(tip({label:c=>`${c.dataset.label}: ${p1(c.parsed.y)}%`, footer:it=>{const m=C.trend._m[it[0].dataIndex]; return `Late rate ${p1(pct(m[1]+m[2],m[0]))}% of ${fmt(m[0])} orders`;}}),{displayColors:true,boxPadding:4})},
+    scales:{x:Object.assign(ax(false),{stacked:true,ticks:Object.assign(ax().ticks,{maxRotation:0,autoSkipPadding:12})}),y:Object.assign(ax(true),{stacked:true,beginAtZero:true,ticks:Object.assign(ax().ticks,{callback:pctTick})})}}});
+C.lane = hbar('c-lane', (e,els)=>{ if(!els.length) return; const k=C.lane._k[els[0].index]; F.ss=Math.floor(k/100); F.cs=k%100; sync(); render(); },
+  {label:c=>`${fmt(c.parsed.x)} late orders`, afterLabel:c=>{const l=C.lane._d[c.dataIndex]; return [`Late rate ${p1(pct(l[1],l[0]))}% of ${fmt(l[0])} orders`,`${Math.round(pct(l[2],l[1]))}% of them transit caused`];}});
+C.cs = hbar('c-cs', (e,els)=>{ if(els.length) toggle('cs', C.cs._k[els[0].index]); }, {label:c=>`Late rate ${p1(c.parsed.x)}%`, afterLabel:c=>`${fmt(C.cs._d[c.dataIndex][1])} late of ${fmt(C.cs._d[c.dataIndex][0])} orders`}, pctTick);
+C.cat = hbar('c-cat', (e,els)=>{ if(els.length) toggle('cat', C.cat._k[els[0].index]); }, {label:c=>`Late rate ${p1(c.parsed.x)}%`, afterLabel:c=>`${fmt(C.cat._d[c.dataIndex][1])} late of ${fmt(C.cat._d[c.dataIndex][0])} orders`}, pctTick);
+C.pareto = new Chart($('c-pareto'), {type:'line', data:{datasets:[
+    {label:'Share of late orders',data:[],borderColor:css('--s2'),backgroundColor:css('--s2'),borderWidth:2,pointRadius:0,pointHoverRadius:4},
+    {label:'Share of all orders',data:[],borderColor:css('--s1'),backgroundColor:css('--s1'),borderWidth:2,pointRadius:0,pointHoverRadius:4}]},
+  options:{responsive:true,maintainAspectRatio:false,parsing:false,interaction:{mode:'index',intersect:false,axis:'x'},
+    plugins:{legend, tooltip:Object.assign(tip({title:it=>`Top ${p1(it[0].parsed.x)}% of sellers`, label:c=>`${c.dataset.label}: ${p1(c.parsed.y)}%`}),{displayColors:true,boxPadding:4})},
+    scales:{x:Object.assign(ax(false),{type:'linear',min:0,max:100,title:{display:true,text:'Sellers, ranked by late orders (cumulative %)',color:css('--muted')},ticks:Object.assign(ax().ticks,{callback:pctTick})}),
+            y:Object.assign(ax(true),{min:0,max:100,ticks:Object.assign(ax().ticks,{callback:pctTick})})}}});
+C.ci = new Chart($('c-ci'), {type:'bar', data:{labels:[],datasets:[
+    {type:'scatter',label:'Observed late rate',data:[],backgroundColor:css('--s1'),borderColor:'#fff',borderWidth:2,pointRadius:6,pointHoverRadius:7,order:1},
+    {type:'scatter',label:'Expected from order mix',data:[],backgroundColor:css('--s2'),borderColor:'#fff',borderWidth:2,pointStyle:'rectRot',pointRadius:6,pointHoverRadius:7,order:2},
+    {label:'95% interval',data:[],backgroundColor:css('--s1'),barThickness:2,order:3,pointStyle:'line',borderColor:css('--s1'),borderWidth:2}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:Object.assign({},legend,{labels:Object.assign({},legend.labels,{usePointStyle:true})}), tooltip:tip({title:it=>C.ci.data.labels[it[0].dataIndex], label:c=>{const s=C.ci._d[c.dataIndex]; return [`Observed ${p1(100*s.rate)}% (${p1(100*s.lo)} to ${p1(100*s.hi)})`,`Expected ${p1(100*s.erate)}%`,`${s.late} late of ${fmt(s.n)} orders`];}})},
+    scales:{x:Object.assign(ax(true),{beginAtZero:true,ticks:Object.assign(ax().ticks,{callback:pctTick})}),y:Object.assign(ax(false),{type:'category'})}}});
+let drillChart = null;
+
+/* ---------- render ---------- */
+let A, tab='score', sel=null, sortK='excess', sortD=-1, pg=0, qpg=0, queue=[];
+const sname = s => { const [id,city,st] = D.sellers[s.i]; return `<span style="white-space:nowrap"><b style="font-weight:600">${id}</b> <span class="sub2">${esc(city)}, ${st}</span></span>`; };
+const quantile = (arr,q) => { if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); return s[Math.min(s.length-1,Math.floor(q*s.length))]; };
+
+function render(){
+  A = agg();
+  $('count').innerHTML = `<b>${fmt(A.n)}</b> of ${fmt(N)} orders in view`;
+  if(!A.n){ $('kpis').innerHTML = '<div class="card empty" style="grid-column:1/-1">No orders match these filters.</div>'; return; }
+  score(); sellers(); queueView();
+}
+
+function score(){
+  const [lo,hi] = wilson(A.late,A.n); let cum=0, med=0; for(let i=0;i<1200;i++){ cum+=A.dh[i]; if(cum>=A.n/2){ med=i/10; break; } }
+  $('kpis').innerHTML = [
+    ['','Late order rate', p1(100*A.rate)+'%', `95% interval ${p1(100*lo)} to ${p1(100*hi)}`],
+    ['','Late orders', fmt(A.late), `of ${fmt(A.n)} delivered`],
+    ['o','Caused by dispatch', p1(pct(A.disp,A.late))+'%', `${fmt(A.disp)} late orders; rest is transit`],
+    ['','Excess days', fmt(A.excess), `Median ${quantile(A.xs,.5)}, 90th percentile ${quantile(A.xs,.9)} days`],
+    ['o','Median dispatch time', p1(med)+' d', `Deadline missed on ${p1(100*A.dmr)}% of orders`],
+    ['','Value tied to late orders', brl(A.lateValue), `${p1(pct(A.lateValue,A.value))}% of order value`],
+  ].map(([c,l,v,s]) => `<div class="card kpi ${c}"><div class="lab">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`).join('');
+
+  const ms = []; for(let i=F.from;i<=F.to;i++) ms.push(i);
+  C.trend._m = ms.map(i=>A.mo[i]); C.trend.data.labels = ms.map(i=>mlabel(D.months[i]));
+  C.trend.data.datasets[0].data = ms.map(i=>pct(A.mo[i][2],A.mo[i][0])); C.trend.data.datasets[1].data = ms.map(i=>pct(A.mo[i][1],A.mo[i][0])); C.trend.update();
+
+  const lanes = [...A.lane].filter(([,l])=>l[0]>=100).sort((a,b)=>b[1][1]-a[1][1]).slice(0,10);
+  C.lane._k = lanes.map(l=>l[0]); C.lane._d = lanes.map(l=>l[1]);
+  C.lane.data.labels = lanes.map(([k])=>D.sellerStates[Math.floor(k/100)]+' to '+D.customerStates[k%100]); C.lane.data.datasets[0].data = lanes.map(l=>l[1][1]); C.lane.update();
+
+  const dim = (chart, arr, selIdx, names, take) => {
+    let it = arr.map((d,i)=>[i,d]).filter(([,d])=>d[0]>0).sort((a,b)=>b[1][0]-a[1][0]).slice(0,take);
+    if(selIdx>=0 && !it.some(([i])=>i===selIdx)) it[it.length-1] = [selIdx, arr[selIdx]];
+    it.sort((a,b)=>pct(b[1][1],b[1][0])-pct(a[1][1],a[1][0]));
+    chart._k = it.map(d=>d[0]); chart._d = it.map(d=>d[1]); chart.data.labels = it.map(([i])=>names[i]);
+    chart.data.datasets[0].data = it.map(([,d])=>pct(d[1],d[0]));
+    chart.data.datasets[0].backgroundColor = it.map(([i])=>selIdx<0||i===selIdx?css('--s1'):css('--dim')); chart.update();
+  };
+  dim(C.cs, agg('cs').cs, F.cs, D.customerStates, 12); dim(C.cat, agg('cat').cat, F.cat, D.categories, 12);
+}
+
+function sellers(){
+  const all = [...A.sellers].sort((a,b)=>b.late-a.late); let cl=0, co=0; const P1=[], P2=[];
+  const step = Math.max(1, Math.floor(all.length/200));
+  all.forEach((s,i)=>{ cl+=s.late; co+=s.n; if(i%step===0||i===all.length-1){ const x=100*(i+1)/all.length; P1.push({x,y:pct(cl,A.late)}); P2.push({x,y:pct(co,A.n)}); } });
+  C.pareto.data.datasets[0].data = P1; C.pareto.data.datasets[1].data = P2; C.pareto.update();
+  const k = Math.max(1,Math.round(all.length*.05)), tl = all.slice(0,k).reduce((t,s)=>t+s.late,0), to = all.slice(0,k).reduce((t,s)=>t+s.n,0);
+  $('pareto-d').innerHTML = `The top 5% of sellers (${fmt(k)}) hold <b>${p1(pct(tl,A.late))}%</b> of late orders, but they also ship <b>${p1(pct(to,A.n))}%</b> of all orders. Most of the concentration is simply size.`;
+
+  const mv = +$('minvol').value; $('minvol-v').textContent = mv;
+  const elig = A.sellers.filter(s=>s.n>=mv);
+  const top = [...elig].sort((a,b)=>b.excess-a.excess).slice(0,12);
+  C.ci._d = top; C.ci.data.labels = top.map(s=>D.sellers[s.i][0]);
+  C.ci.data.datasets[0].data = top.map((s,i)=>({x:100*s.rate,y:D.sellers[s.i][0]})); C.ci.data.datasets[1].data = top.map(s=>({x:100*s.erate,y:D.sellers[s.i][0]}));
+  C.ci.data.datasets[2].data = top.map(s=>[100*s.lo,100*s.hi]); C.ci.update();
+
+  const q = $('sq').value.trim().toLowerCase();
+  const rows = elig.filter(s=>!q||(D.sellers[s.i][0]+' '+D.sellers[s.i][1]).toLowerCase().includes(q)).sort((a,b)=>(a[sortK]<b[sortK]?-1:a[sortK]>b[sortK]?1:0)*sortD);
+  const cols = [['i','Seller',''],['n','Orders','r'],['rate','Late rate','r'],['erate','Expected','r'],['excess','Excess late','r'],['dmr','Deadline missed','r'],['cause','Cause',''],['flagLate','Status','']];
+  $('t-sel').tHead.innerHTML = '<tr>'+cols.map(([k,l,c])=>`<th class="${c}" data-k="${k}">${l}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+  const PG=10, pages=Math.max(1,Math.ceil(rows.length/PG)); pg=Math.min(pg,pages-1);
+  $('t-sel').tBodies[0].innerHTML = rows.slice(pg*PG,pg*PG+PG).map(s=>`<tr class="click ${sel===s.i?'sel':''}" data-i="${s.i}">
+    <td>${sname(s)}</td><td class="r n">${fmt(s.n)}</td><td class="r n">${p1(100*s.rate)}%<div class="sub2">${p1(100*s.lo)} to ${p1(100*s.hi)}</div></td>
+    <td class="r n">${p1(100*s.erate)}%</td><td class="r n">${s.excess>0?'+':''}${p1(s.excess)}</td><td class="r n">${p1(100*s.dmr)}%</td>
+    <td><span class="tag ${s.cause[0]}">${s.late?s.cause:'none'}</span></td><td>${s.flagLate?'<span class="tag w">Flagged</span>':'<span class="sub2" style="white-space:nowrap">In range</span>'}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No sellers with ${mv} or more orders in view.</td></tr>`;
+  $('sel-info').textContent = `${fmt(rows.length)} sellers with ${mv}+ orders (${fmt(A.sellers.length-elig.length)} below the minimum are not judged)`;
+  $('sel-prev').disabled = pg===0; $('sel-next').disabled = pg>=pages-1;
+  if(sel===null || !A.sel.has(sel)) sel = top.length ? top[0].i : null;
+  drill();
+}
+
+function drill(){
+  const s = sel!==null && A.sel.get(sel);
+  if(!s){ $('drill').innerHTML = '<div class="empty">Select a seller to see the detail.</div>'; return; }
+  const mo = Array.from({length:NM},()=>[0,0]), dest = new Map(), cat = new Map();
+  for(const i of A.rows) if(D.s[i]===sel){ const L=D.cause[i]>0?1:0; mo[D.m[i]][0]++; mo[D.m[i]][1]+=L;
+    const d=dest.get(D.cs[i])||[0,0]; d[0]++; d[1]+=L; dest.set(D.cs[i],d); const c=cat.get(D.c[i])||0; cat.set(D.c[i],c+1); }
+  const topDest = [...dest].sort((a,b)=>b[1][1]-a[1][1]||b[1][0]-a[1][0]).slice(0,3), topCat = [...cat].sort((a,b)=>b[1]-a[1])[0];
+  const advice = !s.late ? 'No late orders in view. No action.'
+    : s.flagDisp ? 'Misses the dispatch deadline more often than the platform, with the interval clear of it. Candidate for the coaching pilot: handover cut off times, stock checks, shipping limit settings.'
+    : s.flagLate && s.cause==='transit' ? 'Late more than the order mix predicts, but the seller hands over on time. Review the carrier and lanes below. No seller action.'
+    : s.flagLate ? 'Late more than expected and dispatch led, though the dispatch interval is not clear of the platform rate. Monitor for another month before acting.'
+    : 'Within the range the order mix predicts. No action.';
+  $('drill').innerHTML = `<h2>${D.sellers[sel][0]} <span class="sub2">${esc(D.sellers[sel][1])}, ${D.sellers[sel][2]}</span></h2>
+    <div class="stat"><div><b>${fmt(s.n)}</b>orders</div><div><b>${p1(100*s.rate)}%</b>late (expected ${p1(100*s.erate)}%)</div><div><b>${s.ld} / ${s.lt}</b>dispatch / transit caused</div><div><b>${brl(s.value)}</b>order value</div></div>
+    <div class="lg"><span style="--c:var(--s1)">This seller</span><span style="--c:var(--s2)">Platform in view</span></div>
+    <div class="chart s"><canvas id="c-drill" role="img" aria-label="Seller late rate by month against platform"></canvas></div>
+    <div class="hint">Months with fewer than 10 orders are left blank.</div>
+    <p style="margin-top:10px;font-size:13px"><b>Where the late orders go:</b> ${topDest.map(([k,d])=>`${D.customerStates[k]} (${d[1]} of ${d[0]})`).join(', ')}. <b>Main category:</b> ${esc(D.categories[topCat[0]])}.</p>
+    <div class="verdict"><b>Recommendation.</b> ${advice}</div>`;
+  const ms=[]; for(let i=F.from;i<=F.to;i++) ms.push(i);
+  if(drillChart) drillChart.destroy();
+  drillChart = new Chart($('c-drill'), {type:'line', data:{labels:ms.map(i=>mlabel(D.months[i])), datasets:[
+      {label:'This seller',data:ms.map(i=>mo[i][0]>=10?pct(mo[i][1],mo[i][0]):null),borderColor:css('--s1'),backgroundColor:css('--s1'),borderWidth:2,pointRadius:3,spanGaps:false},
+      {label:'Platform',data:ms.map(i=>pct(A.mo[i][1]+A.mo[i][2],A.mo[i][0])),borderColor:css('--s2'),backgroundColor:css('--s2'),borderWidth:2,pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:Object.assign(tip({label:c=>`${c.dataset.label}: ${c.parsed.y===null?'n/a':p1(c.parsed.y)+'%'}`,afterBody:it=>`Seller orders: ${mo[ms[it[0].dataIndex]][0]}`}),{displayColors:true,boxPadding:4})},
+      scales:{x:Object.assign(ax(false),{ticks:Object.assign(ax().ticks,{maxRotation:0,autoSkipPadding:10})}),y:Object.assign(ax(true),{beginAtZero:true,ticks:Object.assign(ax().ticks,{callback:pctTick})})}}});
+}
+
+function queueView(){
+  const H = RES.holdout, LH = RES.lane_holdout;
+  const ev = (cls,h,b,a,b2,c,d,lab) => `<div class="ev ${cls}"><div class="h">${h}</div><div class="b">${b}</div><div class="nums"><div><b>${a}%</b>flagged, before</div><div><b>${b2}%</b>others, before</div><div><b>${c}%</b>flagged, after</div><div><b>${d}%</b>others, after</div><div><b>${lab}</b>of the gap persisted</div></div></div>`;
+  const a = H['adjusted late rate flag'], dsp = H['dispatch miss flag'];
+  $('evidence').innerHTML =
+    ev('o',`Sellers flagged on late rate: the gap vanished`,`${a.sellers_flagged} sellers flagged even after adjusting for month and destination. Afterwards they were no worse than everyone else. Penalising them would punish noise and carrier problems.`,a.train_flagged,a.train_others,a.test_flagged,a.test_others,'None')+
+    ev('',`Sellers flagged on missed dispatch deadlines: partly persistent`,`${dsp.sellers_flagged} sellers. This is the one measure a seller controls, and the flagged group still missed deadlines almost twice as often afterwards.`,dsp.train_flagged,dsp.train_others,dsp.test_flagged,dsp.test_others,Math.round(100*dsp.persistence)+'%')+
+    ev('',`Lanes flagged on late rate: partly persistent`,`${LH.lanes_flagged.length} lanes, mostly São Paulo to Rio de Janeiro and the Northeast. These stayed worse than the rest.`,LH.train_flagged,LH.train_others,LH.test_flagged,LH.test_others,Math.round(100*LH.persistence)+'%');
+
+  const mv = +$('minvol').value, months = F.to-F.from+1, yr = 12/months;
+  const fs = A.sellers.filter(s=>s.n>=mv&&s.flagDisp&&s.ld>0).sort((x,y)=>y.ld-x.ld);
+  const n = Math.min(+$('s-n').value, fs.length), eff = +$('s-e').value/100, cost = +$('s-c').value, lc = +$('s-l').value, days = +$('s-d').value;
+  $('s-n-v').textContent = `${n} of ${fs.length} flagged`; $('s-e-v').textContent = Math.round(eff*100)+'%'; $('s-c-v').textContent = brl(cost); $('s-l-v').textContent = brl(lc); $('s-d-v').textContent = days+(days>1?' days':' day');
+  const ld = fs.slice(0,n).reduce((t,s)=>t+s.ld,0), avoided = ld*yr*PERSIST*eff, benefit = avoided*lc, total = n*cost, net = benefit-total;
+  const cls = v => v>=0?'pos':'neg';
+  $('sim-out').innerHTML = `<div><div class="l">Late orders avoided a year</div><div class="v">${p1(avoided)}</div></div><div><div class="l">Pilot cost</div><div class="v">${brl(total)}</div></div>
+    <div><div class="l">Net benefit a year</div><div class="v ${cls(net)}">${net<0?'−':''}${brl(Math.abs(net))}</div></div><div><div class="l">Break-even cost per seller</div><div class="v">${n?brl(benefit/n):'n/a'}</div></div>`;
+  const la = A.badLate.filter(x=>x<=days).length, laYr = la*yr;
+  $('lane-out').innerHTML = `<div><div class="l">Late orders avoided a year</div><div class="v">${p1(laYr)}</div></div><div><div class="l">Share of those lanes' late orders</div><div class="v">${p1(pct(la,A.badLate.length))}%</div></div>`;
+  $('sim-v').innerHTML = n ? `<b>Reading.</b> Coaching ${n} sellers removes about ${p1(avoided)} late orders a year because only ${Math.round(100*PERSIST)}% of the dispatch gap persists. A longer promise on the persistent lanes removes about ${p1(laYr)}. ${laYr>avoided?'The lane change reaches more orders, so test it first and keep any seller pilot small and cheap, for example automated deadline reminders.':'In this view the seller pilot reaches more orders than the lane change.'}` : '<b>Reading.</b> No sellers in this view clear the dispatch flag at the current minimum volume.';
+
+  const badL = [...A.lane].filter(([k,l])=>BAD.has(k)&&l[0]>=100).map(([k,l])=>({type:'Lane', name:`<b style="font-weight:600">${D.sellerStates[Math.floor(k/100)]} to ${D.customerStates[k%100]}</b>`, n:l[0], rate:l[1]/l[0], dmr:null, add:l[2], cause:'t', action:'Stayed late in the holdout. Test a longer delivery promise and raise transit times with the carrier.'}));
+  const selQ = fs.map(s=>({type:'Seller', name:sname(s), n:s.n, rate:s.rate, dmr:s.dmr, add:s.ld, cause:'d', action:'Dispatch coaching pilot: deadline reminders and handover cut off review. Supportive, not punitive.'}));
+  queue = badL.concat(selQ).sort((x,y)=>y.add-x.add); qpg = Math.min(qpg, Math.max(0,Math.ceil(queue.length/10)-1)); qrender();
+}
+function qrender(){
+  const PG=10, pages=Math.max(1,Math.ceil(queue.length/PG));
+  $('t-q').tBodies[0].innerHTML = queue.slice(qpg*PG,qpg*PG+PG).map((q,i)=>`<tr><td class="n">${qpg*PG+i+1}</td><td>${q.name}</td><td><span class="tag ${q.cause}">${q.type}</span></td><td class="r n">${fmt(q.n)}</td><td class="r n">${p1(100*q.rate)}%</td><td class="r n">${q.dmr===null?'<span class="sub2">n/a</span>':p1(100*q.dmr)+'%'}</td><td class="r n">${fmt(q.add)} <span class="sub2">${q.cause==='t'?'transit':'dispatch'}</span></td><td style="min-width:260px">${q.action}</td></tr>`).join('') || '<tr><td colspan="8" class="empty">Nothing in this view meets the rules for action.</td></tr>';
+  $('q-info').textContent = queue.length ? `Showing ${qpg*PG+1} to ${Math.min(queue.length,(qpg+1)*PG)} of ${queue.length}` : '';
+  $('q-prev').disabled = qpg===0; $('q-next').disabled = qpg>=pages-1;
+}
+
+/* ---------- static: mix decomposition ---------- */
+(function(){ const d = RES.decomposition; $('mx-a').textContent = d.baseline_rate+'%'; $('mx-b').textContent = d.peak_rate+'%';
+  $('mix').innerHTML = Object.entries(d.by).map(([k,v]) => { const t = v.mix_pts+v.rate_pts; return `<div class="row"><div class="top"><span>${k}</span><b>${p1(pct(v.mix_pts,t))}% from mix</b></div><div class="track"><i style="width:${pct(v.rate_pts,t)}%;background:var(--s1)"></i><i style="width:${pct(v.mix_pts,t)}%;background:var(--s2)"></i></div><small>${v.rate_pts} points from worse performance, ${v.mix_pts} from a different mix</small></div>`; }).join('');
+  $('mx-v').innerHTML = `<b>Reading.</b> The spikes were not caused by selling different categories, shipping different lanes or a different set of sellers. The same mix simply arrived later, and ${p1(pct(d.cause_pts.transit,d.change_pts))}% of the rise was transit caused.`; })();
+
+/* ---------- events ---------- */
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.t;
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x===b)); document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id==='v-'+tab));
+  Object.values(C).forEach(c => c.resize()); if(drillChart) drillChart.resize(); });
+$('minvol').oninput = () => { pg=0; sellers(); queueView(); };
+$('sq').oninput = () => { pg=0; sellers(); };
+$('t-sel').tHead.onclick = e => { const k = e.target.closest('th')?.dataset.k; if(!k) return; if(sortK===k) sortD=-sortD; else { sortK=k; sortD = k==='i'||k==='cause'?1:-1; } pg=0; sellers(); };
+$('t-sel').tBodies[0].onclick = e => { const tr = e.target.closest('tr[data-i]'); if(!tr) return; sel = +tr.dataset.i; sellers(); };
+$('sel-prev').onclick = () => { pg--; sellers(); }; $('sel-next').onclick = () => { pg++; sellers(); };
+$('q-prev').onclick = () => { qpg--; qrender(); }; $('q-next').onclick = () => { qpg++; qrender(); };
+['s-n','s-e','s-c','s-l','s-d'].forEach(id => $(id).oninput = queueView);
+
+$('p-orders').textContent = fmt(N)+' delivered orders, '+fmt(NS)+' sellers';
+$('p-range').textContent = mlabel(D.months[0])+' to '+mlabel(D.months[NM-1]);
+render();
+})();
+</script>
+</body>
+</html>

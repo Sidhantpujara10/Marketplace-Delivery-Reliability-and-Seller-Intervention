@@ -1,0 +1,396 @@
+{
+ "sql": {
+  "1": [
+   {
+    "orders": 94819,
+    "late_orders": 6506,
+    "late_rate": 6.86,
+    "dispatch_miss_rate": 9.03,
+    "excess_days": 69096.0,
+    "late_value": 1146291.0,
+    "late_value_pct": 7.56
+   }
+  ],
+  "2": [
+   {
+    "late_cause": "dispatch",
+    "orders": 1811,
+    "pct_of_late": 27.8,
+    "avg_excess_days": 9.8,
+    "avg_review": 2.27
+   },
+   {
+    "late_cause": "transit",
+    "orders": 4695,
+    "pct_of_late": 72.2,
+    "avg_excess_days": 10.9,
+    "avg_review": 2.27
+   }
+  ],
+  "3": [
+   {
+    "metric": "dispatch_days",
+    "p50": 1.85,
+    "p90": 6.0,
+    "p95": 8.04
+   },
+   {
+    "metric": "transit_days",
+    "p50": 7.12,
+    "p90": 18.97,
+    "p95": 24.37
+   }
+  ],
+  "4": [
+   {
+    "p50": 8.0,
+    "p90": 23.0,
+    "p95": 32.0
+   }
+  ],
+  "5": [
+   {
+    "top_n_sellers": 10,
+    "pct_of_sellers": 0.3,
+    "pct_of_late_orders": 15.7,
+    "pct_of_all_orders": 13.8
+   },
+   {
+    "top_n_sellers": 25,
+    "pct_of_sellers": 0.9,
+    "pct_of_late_orders": 27.5,
+    "pct_of_all_orders": 22.4
+   },
+   {
+    "top_n_sellers": 50,
+    "pct_of_sellers": 1.7,
+    "pct_of_late_orders": 38.1,
+    "pct_of_all_orders": 32.1
+   },
+   {
+    "top_n_sellers": 100,
+    "pct_of_sellers": 3.4,
+    "pct_of_late_orders": 50.5,
+    "pct_of_all_orders": 41.9
+   },
+   {
+    "top_n_sellers": 146,
+    "pct_of_sellers": 5.0,
+    "pct_of_late_orders": 58.5,
+    "pct_of_all_orders": 49.6
+   },
+   {
+    "top_n_sellers": 292,
+    "pct_of_sellers": 10.0,
+    "pct_of_late_orders": 73.7,
+    "pct_of_all_orders": 62.8
+   }
+  ],
+  "6": [
+   {
+    "lane": "SP > SP",
+    "orders": 30224,
+    "late_orders": 1424,
+    "late_rate": 4.7,
+    "pct_of_all_late": 21.9,
+    "pct_transit": 59.0
+   },
+   {
+    "lane": "SP > RJ",
+    "orders": 8044,
+    "late_orders": 1149,
+    "late_rate": 14.3,
+    "pct_of_all_late": 17.7,
+    "pct_transit": 79.0
+   },
+   {
+    "lane": "SP > MG",
+    "orders": 7320,
+    "late_orders": 393,
+    "late_rate": 5.4,
+    "pct_of_all_late": 6.0,
+    "pct_transit": 73.0
+   },
+   {
+    "lane": "SP > BA",
+    "orders": 2277,
+    "late_orders": 293,
+    "late_rate": 12.9,
+    "pct_of_all_late": 4.5,
+    "pct_transit": 87.0
+   },
+   {
+    "lane": "SP > RS",
+    "orders": 3522,
+    "late_orders": 238,
+    "late_rate": 6.8,
+    "pct_of_all_late": 3.7,
+    "pct_transit": 81.0
+   },
+   {
+    "lane": "SP > SC",
+    "orders": 2283,
+    "late_orders": 222,
+    "late_rate": 9.7,
+    "pct_of_all_late": 3.4,
+    "pct_transit": 76.0
+   },
+   {
+    "lane": "SP > ES",
+    "orders": 1442,
+    "late_orders": 179,
+    "late_rate": 12.4,
+    "pct_of_all_late": 2.8,
+    "pct_transit": 83.0
+   },
+   {
+    "lane": "SP > PR",
+    "orders": 3052,
+    "late_orders": 138,
+    "late_rate": 4.5,
+    "pct_of_all_late": 2.1,
+    "pct_transit": 78.0
+   },
+   {
+    "lane": "SP > CE",
+    "orders": 949,
+    "late_orders": 133,
+    "late_rate": 14.0,
+    "pct_of_all_late": 2.0,
+    "pct_transit": 87.0
+   },
+   {
+    "lane": "PR > RJ",
+    "orders": 957,
+    "late_orders": 117,
+    "late_rate": 12.2,
+    "pct_of_all_late": 1.8,
+    "pct_transit": 76.0
+   }
+  ],
+  "7": [
+   {
+    "cohort": "2017 H1",
+    "sellers": 440,
+    "orders": 11044,
+    "late_rate": 4.09,
+    "dispatch_miss_rate": 7.23
+   },
+   {
+    "cohort": "2017 H2",
+    "sellers": 461,
+    "orders": 9291,
+    "late_rate": 4.36,
+    "dispatch_miss_rate": 7.24
+   },
+   {
+    "cohort": "2018 H1",
+    "sellers": 815,
+    "orders": 9380,
+    "late_rate": 5.22,
+    "dispatch_miss_rate": 8.84
+   },
+   {
+    "cohort": "2018 H2",
+    "sellers": 332,
+    "orders": 1206,
+    "late_rate": 4.64,
+    "dispatch_miss_rate": 6.97
+   }
+  ],
+  "8": [
+   {
+    "tenure": "after 30 days",
+    "orders": 84224,
+    "late_rate": 7.01,
+    "dispatch_miss_rate": 8.88
+   },
+   {
+    "tenure": "first 30 days",
+    "orders": 10595,
+    "late_rate": 5.72,
+    "dispatch_miss_rate": 10.18
+   }
+  ],
+  "9": [
+   {
+    "outcome": "late",
+    "reviewed_orders": 6353,
+    "avg_review": 2.27,
+    "pct_1_or_2_stars": 62.4
+   },
+   {
+    "outcome": "on time",
+    "reviewed_orders": 87830,
+    "avg_review": 4.29,
+    "pct_1_or_2_stars": 9.2
+   }
+  ]
+ },
+ "decomposition": {
+  "baseline_rate": 4.53,
+  "peak_rate": 15.16,
+  "change_pts": 10.64,
+  "by": {
+   "Category mix": {
+    "mix_pts": 0.03,
+    "rate_pts": 10.6
+   },
+   "Lane mix": {
+    "mix_pts": 0.17,
+    "rate_pts": 10.47
+   },
+   "Seller mix": {
+    "mix_pts": 0.76,
+    "rate_pts": 9.88
+   }
+  },
+  "cause_pts": {
+   "dispatch": 1.9,
+   "transit": 8.73
+  }
+ },
+ "bootstrap": {
+  "late_rate": 6.86,
+  "late_rate_ci": [
+   6.7,
+   7.02
+  ],
+  "top5pct_sellers": 146,
+  "top5pct_share_of_late": 58.5,
+  "top5pct_share_of_late_ci": [
+   57.29,
+   59.75
+  ],
+  "top5pct_share_of_orders": 49.56,
+  "top5pct_share_of_orders_ci": [
+   49.24,
+   49.89
+  ]
+ },
+ "flagging": {
+  "min_orders": 30,
+  "sellers": 2924,
+  "eligible": 611,
+  "below_min_with_rate_25plus": 224,
+  "naive": {
+   "flagged": 83,
+   "orders_pct": 18.0,
+   "late_pct": 31.4
+  },
+  "adjusted": {
+   "flagged": 64,
+   "orders_pct": 11.7,
+   "late_pct": 21.9
+  },
+  "dispatch": {
+   "flagged": 120,
+   "orders_pct": 17.6,
+   "late_pct": 24.8,
+   "dispatch_late_pct": 48.7
+  },
+  "naive_cleared_by_adjustment": 32
+ },
+ "holdout": {
+  "naive late rate flag": {
+   "metric": "is_late",
+   "sellers_flagged": 45,
+   "still_active": 40,
+   "train_flagged": 12.89,
+   "train_others": 5.68,
+   "test_flagged": 3.76,
+   "test_others": 4.63,
+   "test_orders": 3243,
+   "persistence": -0.12
+  },
+  "adjusted late rate flag": {
+   "metric": "is_late",
+   "sellers_flagged": 39,
+   "still_active": 33,
+   "train_flagged": 13.57,
+   "train_others": 5.84,
+   "test_flagged": 4.04,
+   "test_others": 4.58,
+   "test_orders": 2450,
+   "persistence": -0.07
+  },
+  "dispatch miss flag": {
+   "metric": "dispatch_late",
+   "sellers_flagged": 87,
+   "still_active": 70,
+   "train_flagged": 26.99,
+   "train_others": 6.27,
+   "test_flagged": 13.11,
+   "test_others": 7.11,
+   "test_orders": 3128,
+   "persistence": 0.29,
+   "test_dispatch_late_rate_flagged": 2.11,
+   "test_dispatch_late_rate_others": 1.54
+  }
+ },
+ "pilot": {
+  "sellers": 120,
+  "orders": 16659,
+  "late_orders": 1614,
+  "late_dispatch": 882,
+  "persistence": 0.29,
+  "avoided_per_year_p10": 18,
+  "avoided_per_year_p50": 45,
+  "avoided_per_year_p90": 92,
+  "avg_value_of_late_order": 176.19,
+  "months_of_data": 20,
+  "effect_range": [
+   0.15,
+   0.5
+  ]
+ },
+ "lane_holdout": {
+  "lanes_flagged": [
+   "MG > RJ",
+   "PR > RJ",
+   "SC > RJ",
+   "SP > BA",
+   "SP > CE",
+   "SP > ES",
+   "SP > MA",
+   "SP > PB",
+   "SP > PE",
+   "SP > PI",
+   "SP > RJ",
+   "SP > SC"
+  ],
+  "train_flagged": 12.98,
+  "train_others": 4.84,
+  "test_flagged": 6.36,
+  "test_others": 4.12,
+  "persistence": 0.28
+ },
+ "promise_buffer": {
+  "lanes": 12,
+  "test_orders": 5788,
+  "test_late": 368,
+  "share_of_all_test_late": 26.2,
+  "avg_promised_days": 29.0,
+  "avoided_by_days": {
+   "1": 41,
+   "2": 73,
+   "3": 106,
+   "4": 134,
+   "5": 159,
+   "6": 184,
+   "7": 211
+  },
+  "months": 5
+ },
+ "query_plan": {
+  "before_ms": 8.637,
+  "after_ms": 0.158
+ },
+ "scope": {
+  "orders": 94819,
+  "sellers": 2924,
+  "from": "2017-01",
+  "to": "2018-08",
+  "multi_seller_orders": 1220
+ }
+}
